@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sign Language Translator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { font-size: 2.5rem; margin-bottom: 5px; font-weight: 600; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        p.subtitle { color: #a8b2d1; margin-bottom: 2rem; }
+        
+        .main-container { display: flex; gap: 2rem; max-width: 1100px; width: 100%; justify-content: center; }
+        
+        .video-card { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .video-card img { border-radius: 10px; width: 640px; height: 480px; object-fit: cover; border: 2px solid #64ffda; }
+        
+        .controls-card { background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; width: 400px; }
+        
+        /* --- NEW GLOWING LIVE SIGN BOX --- */
+        .live-sign-box { background: rgba(100, 255, 218, 0.1); border: 2px solid #64ffda; border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem; box-shadow: 0 0 15px rgba(100, 255, 218, 0.2); transition: all 0.3s ease; }
+        .live-sign-box h3 { color: #a8b2d1; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        #live-letter { font-size: 4.5rem; font-weight: 700; color: #64ffda; text-shadow: 0 0 15px rgba(100, 255, 218, 0.6); line-height: 1; min-height: 70px; }
+
+        .sentence-box { background: rgba(0,0,0,0.3); min-height: 100px; border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.2); }
+        .sentence-box h3 { font-size: 0.9rem; color: #a8b2d1; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        #sentence-text { font-size: 2rem; font-weight: 600; letter-spacing: 2px; word-wrap: break-word; color: white; }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        
+        .btn-add { background: #64ffda; color: #0a192f; grid-column: span 2; font-size: 1.1rem; padding: 15px; }
+        .btn-add:hover { background: #4cd6b4; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(100, 255, 218, 0.4); }
+        
+        .btn-delete { background: #ff6b6b; color: white; }
+        .btn-delete:hover { background: #ee5253; transform: translateY(-2px); }
+        
+        .btn-clear { background: #feca57; color: #222; }
+        .btn-clear:hover { background: #ff9f43; transform: translateY(-2px); }
+        
+        .btn-speak { background: #48dbfb; color: #222; grid-column: span 2; padding: 15px; font-size: 1.1rem; }
+        .btn-speak:hover { background: #0abde3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(72, 219, 251, 0.4); }
+
+        #status-text { text-align: center; margin-top: 10px; color: #a8b2d1; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+    <h1>Sign Language Translator</h1>
+    <p class="subtitle">Real-time AI Vision Powered by Neural Networks</p>
+
+    <div class="main-container">
+        <div class="video-card">
+            <img src="{{ url_for('video_feed') }}" alt="AI Camera Feed">
+        </div>
+
+        <div class="controls-card">
+            
+            <div class="live-sign-box">
+                <h3>Currently Seeing</h3>
+                <div id="live-letter">-</div>
+            </div>
+
+            <div class="sentence-box">
+                <h3>Built Word</h3>
+                <div id="sentence-text"></div>
+            </div>
+
+            <div class="btn-grid">
+                <button class="btn-add" onclick="triggerAction('add')">➕ Add Letter (Space)</button>
+                <button class="btn-delete" onclick="triggerAction('delete')">Backspace</button>
+                <button class="btn-clear" onclick="triggerAction('clear')">Clear</button>
+                <button class="btn-speak" onclick="triggerAction('speak')">🔊 Speak Word (Enter)</button>
+            </div>
+            <div id="status-text">System Ready. Show a sign!</div>
+        </div>
+    </div>
+
+    <script>
+        // --- NEW: Constantly ask the AI what it sees! ---
+        setInterval(function() {
+            fetch('/get_live_sign')
+                .then(response => response.json())
+                .then(data => {
+                    const letterBox = document.getElementById('live-letter');
+                    if (data.letter && data.letter !== "") {
+                        letterBox.innerText = data.letter;
+                    } else {
+                        letterBox.innerText = "-"; // Show a dash if no hand is detected
+                    }
+                });
+        }, 150); // It checks exactly every 150 milliseconds!
+
+        // Control Actions
+        function triggerAction(action) {
+            const status = document.getElementById('status-text');
+            if(action === 'speak') status.innerText = "Speaking...";
+            
+            fetch('/' + action, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('sentence-text').innerText = data.sentence;
+                    if(action === 'speak') status.innerText = "Word Spoken! Ready for the next one.";
+                    else status.innerText = "System Ready.";
+                });
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault(); 
+                triggerAction('add');
+            } else if (event.code === 'Enter') {
+                triggerAction('speak');
+            } else if (event.code === 'Backspace') {
+                triggerAction('delete');
+            }
+        });
+    </script>
+</body>
+</html>
