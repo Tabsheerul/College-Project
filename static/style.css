@@ -1,0 +1,73 @@
+/* Glassmorphism utility classes */
+.glass-header {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel {
+    background: rgba(31, 41, 55, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-pill {
+    background: rgba(17, 24, 39, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.btn-primary:hover {
+    background-color: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+.btn-secondary {
+    background-color: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+.btn-secondary:hover {
+    background-color: rgba(156, 163, 175, 0.2);
+    color: #e5e7eb;
+    transform: translateY(-1px);
+}
+.btn-secondary:active {
+    transform: translateY(1px);
+}
+
+.btn-speak {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    color: white;
+    border: none;
+}
+.btn-speak:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+}
+.btn-speak:active {
+    transform: translateY(0);
+}
+
+/* Animations */
+@keyframes pulse-border {
+    0% { border-color: rgba(52, 211, 153, 0.2); }
+    50% { border-color: rgba(52, 211, 153, 0.8); box-shadow: 0 0 15px rgba(52, 211, 153, 0.3); }
+    100% { border-color: rgba(52, 211, 153, 0.2); }
+}
+
+.detecting {
+    animation: pulse-border 2s infinite;
+}
