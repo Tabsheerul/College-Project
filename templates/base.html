@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'app-bg': '#0f172a',
+                        'app-panel': '#0b0f19',
+                        'brand-teal': '#34d399',
+                        'brand-teal-light': '#a7f3d0',
+                        'brand-red': '#ef4444',
+                        'brand-yellow': '#fbbf24',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-app-bg text-white h-screen w-screen overflow-hidden flex flex-col font-inter">
+
+    <!-- Navbar -->
+    <nav class="w-full bg-[#0b0f19] border-b border-gray-800 p-4 flex justify-between items-center shadow-md flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-hands-asl-interpreting text-brand-teal text-2xl"></i>
+            <span class="text-xl font-bold tracking-wide">SignAI</span>
+        </div>
+        <div>
+            {% if session.get('user_id') %}
+                <span class="text-gray-400 mr-4">Welcome, <span class="text-brand-teal font-semibold">{{ session.get('username') }}</span></span>
+                <a href="{{ url_for('dashboard') }}" class="mr-4 hover:text-brand-teal transition-colors {% if request.endpoint == 'dashboard' %}text-brand-teal font-semibold{% endif %}">Dashboard</a>
+                <a href="{{ url_for('history') }}" class="mr-4 hover:text-brand-teal transition-colors {% if request.endpoint == 'history' %}text-brand-teal font-semibold{% endif %}">History</a>
+                <a href="{{ url_for('logout') }}" class="text-brand-red hover:text-red-400 transition-colors"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="mr-4 hover:text-brand-teal transition-colors">Login</a>
+                <a href="{{ url_for('signup') }}" class="bg-brand-teal text-gray-900 px-4 py-2 rounded-lg font-bold hover:bg-emerald-400 transition-colors">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="absolute top-20 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2">
+            {% for message in messages %}
+                <div class="bg-brand-teal text-gray-900 px-6 py-3 rounded-lg shadow-lg font-bold flex items-center gap-3 animate-bounce">
+                    <i class="fa-solid fa-circle-info"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col overflow-y-auto">
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

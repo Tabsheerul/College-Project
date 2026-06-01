@@ -1,40 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language Translator</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'app-bg': '#0f172a', /* dark slate */
-                        'app-panel': '#0b0f19', /* darker blue-black */
-                        'brand-teal': '#34d399', /* emerald/teal */
-                        'brand-teal-light': '#a7f3d0',
-                        'brand-red': '#ef4444',
-                        'brand-yellow': '#fbbf24',
-                    },
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body class="bg-app-bg text-white h-screen w-screen overflow-hidden flex flex-col items-center justify-center font-inter p-4 md:p-6">
-
-    <div class="w-full h-full max-w-6xl mx-auto flex flex-col">
+{% extends "base.html" %}
+{% block content %}
+    <div class="w-full h-full max-w-6xl mx-auto flex flex-col pt-6 pb-6 px-4 md:px-6">
         <!-- Title -->
         <h1 class="text-3xl md:text-4xl font-bold text-center text-white mb-6 flex-shrink-0 tracking-wide">Sign Language Translator</h1>
         
@@ -92,6 +58,6 @@
         </div>
     </div>
 
+    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+{% endblock %}
