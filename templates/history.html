@@ -1,41 +1,88 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="w-full max-w-4xl mx-auto p-6 mt-8">
-    <h1 class="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-        <i class="fa-solid fa-clock-rotate-left text-brand-teal"></i> Translation History
-    </h1>
-    
-    <div class="bg-app-panel border border-gray-800 rounded-3xl shadow-2xl overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-900 border-b border-gray-800 text-gray-400 text-sm uppercase tracking-wider">
-                    <th class="p-5 font-semibold">Spoken Word</th>
-                    <th class="p-5 font-semibold text-right">Time of Translation</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-800">
-                {% for item in history %}
-                <tr class="hover:bg-gray-800/50 transition-colors">
-                    <td class="p-5">
-                        <span class="text-xl font-bold text-white">{{ item.word }}</span>
-                    </td>
-                    <td class="p-5 text-right text-gray-400">
-                        {{ item.timestamp.strftime('%B %d, %Y - %I:%M %p') }}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="2" class="p-10 text-center text-gray-500">
-                        <div class="flex flex-col items-center gap-3">
-                            <i class="fa-solid fa-comment-slash text-4xl mb-2"></i>
-                            <p class="text-lg">No translations yet.</p>
-                            <p class="text-sm">Head over to the Dashboard to translate your first sign!</p>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_user.username }}'s Profile - Sign Language Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'app-bg': '#0f172a',
+                        'app-panel': '#0b0f19',
+                        'brand-teal': '#34d399',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-app-bg text-white min-h-screen flex flex-col items-center py-10 font-inter p-4">
+
+    <div class="w-full max-w-4xl flex justify-between items-center mb-8">
+        <a href="{{ url_for('index') }}" class="text-gray-400 hover:text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Camera
+        </a>
+        <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 transition border border-red-500/30 bg-red-500/10 px-4 py-2 rounded-lg font-medium text-sm">
+            Log Out
+        </a>
     </div>
-</div>
-{% endblock %}
+
+    <div class="bg-app-panel border border-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-4xl">
+        
+        <div class="flex items-center gap-4 mb-8 border-b border-gray-800 pb-6">
+            <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center border-2 border-brand-teal text-2xl text-brand-teal">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold text-white">{{ current_user.username }}</h2>
+                <p class="text-gray-400">Translation History Log</p>
+            </div>
+        </div>
+
+        {% if history %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-gray-800">
+                        <th class="py-4 px-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Date & Time</th>
+                        <th class="py-4 px-4 text-sm font-semibold text-gray-400 uppercase tracking-wider">Translated Word</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/20 transition">
+                        <td class="py-4 px-4 text-gray-400 text-sm whitespace-nowrap">
+                            {{ item.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </td>
+                        <td class="py-4 px-4">
+                            <span class="inline-block bg-brand-teal/10 text-brand-teal px-3 py-1 rounded-lg font-medium tracking-wide">
+                                {{ item.word }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-600 text-3xl">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-300 mb-2">No history yet</h3>
+            <p class="text-gray-500">Go back to the camera and build some words! They will appear here.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

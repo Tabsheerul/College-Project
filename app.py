@@ -5,36 +5,46 @@ import tensorflow as tf
 import pyttsx3
 import threading
 from datetime import datetime
-from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, session, flash
+from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here_for_college_project'
+app.secret_key = 'your_super_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'auth'
 
-# --- Database Models ---
-class User(db.Model):
+# --- DATABASE MODELS ---
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    history = db.relationship('History', backref='user', lazy=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    histories = db.relationship('History', backref='user', lazy=True)
 
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     word = db.Column(db.String(200), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Initialize database
 with app.app_context():
     db.create_all()
 
-# --- AI Setup ---
+# --- AI & CAMERA SETUP ---
 engine = pyttsx3.init()
 engine.setProperty('rate', 150)
+
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7)
@@ -88,7 +98,6 @@ def generate_frames():
                 
                 predictions = model(X_live_lstm, training=False)
                 predictions = predictions.numpy()
-                
                 predicted_index = np.argmax(predictions[0])
                 confidence = predictions[0][predicted_index]
                 
@@ -106,68 +115,10 @@ def generate_frames():
 
     cap.release()
 
-# --- Auth Routes ---
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = User.query.filter_by(username=username).first()
-        if user:
-            flash('Username already exists!')
-            return redirect(url_for('signup'))
-            
-        new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
-        db.session.add(new_user)
-        db.session.commit()
-        
-        flash('Account created successfully! Please log in.')
-        return redirect(url_for('login'))
-        
-    return render_template('signup.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password!')
-            
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('user_id', None)
-    session.pop('username', None)
-    return redirect(url_for('login'))
-
-# --- Main App Routes ---
+# --- WEB ROUTES ---
 @app.route('/')
 def index():
-    if 'user_id' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
-
-@app.route('/dashboard')
-def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return render_template('index.html', username=session['username'])
-
-@app.route('/history')
-def history():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user_history = History.query.filter_by(user_id=session['user_id']).order_by(History.timestamp.desc()).all()
-    return render_template('history.html', history=user_history, username=session['username'])
+    return render_template('index.html')
 
 @app.route('/video_feed')
 def video_feed():
@@ -191,16 +142,57 @@ def handle_action():
         if state["current_sentence"]:
             word_to_speak = state["current_sentence"]
             
-            # Save to DB if logged in
-            if 'user_id' in session:
-                new_history = History(word=word_to_speak, user_id=session['user_id'])
+            # --- SAVE TO DATABASE IF LOGGED IN ---
+            if current_user.is_authenticated:
+                new_history = History(user_id=current_user.id, word=word_to_speak)
                 db.session.add(new_history)
                 db.session.commit()
-
+            
             threading.Thread(target=speak_text, args=(word_to_speak,)).start()
             state["current_sentence"] = "" 
             
     return jsonify({"success": True, "sentence": state["current_sentence"]})
+
+# --- AUTH & HISTORY ROUTES ---
+@app.route('/auth', methods=['GET', 'POST'])
+def auth():
+    if request.method == 'POST':
+        action = request.form.get('action')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if action == 'login':
+            user = User.query.filter_by(username=username).first()
+            if user and check_password_hash(user.password, password):
+                login_user(user)
+                return redirect(url_for('history'))
+            else:
+                flash('Invalid username or password', 'error')
+                
+        elif action == 'signup':
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user:
+                flash('Username already exists', 'error')
+            else:
+                new_user = User(username=username, password=generate_password_hash(password, method='pbkdf2:sha256'))
+                db.session.add(new_user)
+                db.session.commit()
+                login_user(new_user)
+                return redirect(url_for('history'))
+                
+    return render_template('auth.html')
+
+@app.route('/history')
+@login_required
+def history():
+    user_history = History.query.filter_by(user_id=current_user.id).order_by(History.timestamp.desc()).all()
+    return render_template('history.html', history=user_history)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True, host='0.0.0.0')
