@@ -1,9 +1,8 @@
 // DOM Elements
 const currentLetterEl = document.getElementById('current-letter');
-const confidenceEl = document.getElementById('confidence');
-const badgeEl = document.getElementById('prediction-badge');
 const sentenceEl = document.getElementById('current-sentence');
-const placeholderEl = document.getElementById('placeholder-text');
+const seeingBoxEl = document.getElementById('currently-seeing-box');
+const statusTextEl = document.getElementById('status-text');
 
 // State fetching loop
 async function fetchState() {
@@ -14,21 +13,21 @@ async function fetchState() {
         // Update Live Letter
         if (data.current_letter) {
             currentLetterEl.textContent = data.current_letter;
-            confidenceEl.textContent = data.confidence + '%';
-            badgeEl.classList.add('detecting');
+            seeingBoxEl.classList.add('detecting');
+            statusTextEl.textContent = "Sign Detected. Press Space to add.";
+            statusTextEl.className = "text-brand-teal font-medium mt-2";
         } else {
             currentLetterEl.textContent = '-';
-            confidenceEl.textContent = '0%';
-            badgeEl.classList.remove('detecting');
+            seeingBoxEl.classList.remove('detecting');
+            statusTextEl.textContent = "System Ready. Show a sign!";
+            statusTextEl.className = "text-gray-400 font-medium mt-2";
         }
         
         // Update Sentence
-        sentenceEl.textContent = data.current_sentence;
-        
         if (data.current_sentence.length > 0) {
-            placeholderEl.style.opacity = '0';
+            sentenceEl.textContent = data.current_sentence;
         } else {
-            placeholderEl.style.opacity = '1';
+            sentenceEl.textContent = '-';
         }
         
     } catch (error) {
@@ -52,11 +51,10 @@ async function triggerAction(actionName) {
         
         const data = await response.json();
         // Optimistic UI update
-        sentenceEl.textContent = data.sentence;
         if (data.sentence.length > 0) {
-            placeholderEl.style.opacity = '0';
+            sentenceEl.textContent = data.sentence;
         } else {
-            placeholderEl.style.opacity = '1';
+            sentenceEl.textContent = '-';
         }
         
     } catch (error) {
@@ -70,10 +68,6 @@ document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault(); // prevent scrolling
         triggerAction('add');
-        
-        // Add a quick flash effect to the badge
-        badgeEl.style.transform = 'scale(1.05)';
-        setTimeout(() => badgeEl.style.transform = 'scale(1)', 150);
     }
     // Backspace to delete
     else if (e.code === 'Backspace') {
