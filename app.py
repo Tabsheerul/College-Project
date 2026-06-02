@@ -138,6 +138,8 @@ def handle_action():
             state["current_sentence"] += state["current_letter"]
     elif action == 'delete':
         state["current_sentence"] = state["current_sentence"][:-1]
+    elif action == 'clear':
+        state["current_sentence"] = ""
     elif action == 'speak':
         if state["current_sentence"]:
             word_to_speak = state["current_sentence"]

@@ -89,13 +89,16 @@
                         <i class="fa-solid fa-plus"></i> Add Letter (Space)
                     </button>
                     
-                    <!-- Bottom Two Buttons -->
-                    <div class="flex gap-3">
-                        <button onclick="triggerAction('delete')" class="flex-1 bg-brand-red hover:bg-red-400 text-white font-bold text-base lg:text-lg py-3 rounded-xl transition-transform active:scale-95 shadow-md">
-                            Backspace
+                    <!-- Bottom Three Buttons -->
+                    <div class="flex gap-2">
+                        <button onclick="triggerAction('delete')" class="flex-1 bg-brand-red hover:bg-red-400 text-white font-bold text-sm lg:text-base py-3 rounded-xl transition-transform active:scale-95 shadow-md flex flex-col items-center justify-center">
+                            <i class="fa-solid fa-delete-left mb-1"></i>Bksp
                         </button>
-                        <button onclick="triggerAction('speak')" class="flex-1 bg-brand-yellow hover:bg-yellow-300 text-gray-900 font-bold text-base lg:text-lg py-3 rounded-xl transition-transform active:scale-95 shadow-md">
-                            Clear
+                        <button onclick="triggerAction('clear')" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold text-sm lg:text-base py-3 rounded-xl transition-transform active:scale-95 shadow-md flex flex-col items-center justify-center">
+                            <i class="fa-solid fa-eraser mb-1"></i>Clear
+                        </button>
+                        <button onclick="triggerAction('speak')" class="flex-[1.5] bg-brand-yellow hover:bg-yellow-300 text-gray-900 font-bold text-sm lg:text-base py-3 rounded-xl transition-transform active:scale-95 shadow-md flex flex-col items-center justify-center">
+                            <i class="fa-solid fa-volume-high mb-1"></i>Speak
                         </button>
                     </div>
                 </div>
