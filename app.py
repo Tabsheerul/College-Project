@@ -2,8 +2,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import tensorflow as tf
-import pyttsx3
-import threading
+
 from datetime import datetime
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -41,9 +40,6 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-# --- AI & CAMERA SETUP ---
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -58,13 +54,6 @@ state = {
     "current_letter": "",
     "confidence": 0
 }
-
-engine_lock = threading.Lock()
-
-def speak_text(text):
-    with engine_lock:
-        engine.say(text)
-        engine.runAndWait()
 
 def generate_frames():
     global state
@@ -141,6 +130,7 @@ def handle_action():
     elif action == 'clear':
         state["current_sentence"] = ""
     elif action == 'speak':
+        spoken = ""
         if state["current_sentence"]:
             word_to_speak = state["current_sentence"]
             
@@ -150,8 +140,10 @@ def handle_action():
                 db.session.add(new_history)
                 db.session.commit()
             
-            threading.Thread(target=speak_text, args=(word_to_speak,)).start()
+            spoken = word_to_speak
             state["current_sentence"] = "" 
+            
+        return jsonify({"success": True, "sentence": state["current_sentence"], "spoken_word": spoken})
             
     return jsonify({"success": True, "sentence": state["current_sentence"]})
 

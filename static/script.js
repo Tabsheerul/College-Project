@@ -50,6 +50,13 @@ async function triggerAction(actionName) {
         });
         
         const data = await response.json();
+        
+        // --- WEB SPEECH API ---
+        if (actionName === 'speak' && data.spoken_word) {
+            const utterance = new SpeechSynthesisUtterance(data.spoken_word);
+            window.speechSynthesis.speak(utterance);
+        }
+
         // Optimistic UI update
         if (data.sentence.length > 0) {
             sentenceEl.textContent = data.sentence;
